@@ -20,10 +20,13 @@ public class OpenMeteoResponse
     [JsonPropertyName("current_units")]
     public CurrentUnits CurrentUnits { get; set; } = default!;
 
+    [JsonPropertyName("current")]
     public Current Current { get; set; } = default!;
 
     [JsonPropertyName("hourly_units")]
     public HourlyUnits HourlyUnits { get; set; } = default!;
+
+    [JsonPropertyName("hourly")]
 
     public Hourly Hourly { get; set; } = default!;
 }
