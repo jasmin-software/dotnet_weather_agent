@@ -64,7 +64,7 @@ internal static class WeatherTool
             Temperature = $"{current.Temperature}{units.Temperature}",
             FeelsLike = $"{current.ApparentTemperature}{units.ApparentTemperature}",
             WindSpeed = $"{current.Windspeed} {units.Windspeed}",
-            Condition = TranslateWeatherCode(current.Weathercode)
+            Condition = TranslateWeatherCode(current.WeatherCode)
         };
     }
     
@@ -82,7 +82,7 @@ internal static class WeatherTool
                 Time = hourly.Time[i],
                 Temperature = $"{hourly.Temperature2m[i]}{units.Temperature2m}",
                 Precipitation = $"{hourly.Precipitation[i]} {units.Precipitation}",
-                Condition = TranslateWeatherCode(hourly.Weathercode[i])
+                Condition = TranslateWeatherCode(hourly.WeatherCode[i])
             });
         }
 
