@@ -3,6 +3,8 @@ using Microsoft.Extensions.AI;
 using System.ClientModel;
 using A2A;
 using A2A.AspNetCore;
+using Microsoft.Agents.AI;
+using ChatResponseFormat = Microsoft.Extensions.AI.ChatResponseFormat;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,35 +27,19 @@ var chatClient = new OpenAIClient(
     new ApiKeyCredential(githubToken),
     new OpenAIClientOptions()
     {
-        Endpoint = new Uri(endpoint)
+        Endpoint = new Uri(endpoint),
     })
     .GetChatClient(model).AsIChatClient();
 
-var agent = chatClient.AsAIAgent(
-        name: "WeatherAssistant",
-        instructions: @"
-You're a concise and practical weather assistant.
-
-You will receive structured weather data in JSON format with 'current' and 'today' sections.
-
-Your job:
-1. Summarize the current weather in 1 sentence.
-2. Summarize today's forecast in 1-2 sentences.
-3. Highlight anything the user should watch out for (rain, wind, temperature drops, etc.).
-4. Optionally give a short suggestion (e.g., bring a jacket, umbrella).
-
-Guidelines:
-- Be concise (3–4 sentences total).
-- Use natural, friendly language.
-- Do NOT repeat raw JSON or field names.
-- Convert values into readable phrases (e.g., '13°C' → '13 degrees').
-- Prioritize important changes (rain, big temperature swings, strong wind).
-- If conditions are mild, explicitly say it's a good day.
-
-Output format:
-- Paragraph only (no bullet points, no JSON).", // TODO: to return structured response
-        tools: tools);
-
+var agent = chatClient.AsAIAgent(options: new ChatClientAgentOptions
+{
+    Name = "WeatherAssistant",
+    ChatOptions = new () 
+    {
+        ResponseFormat = ChatResponseFormat.ForJsonSchema<WeatherResponse>(), 
+        Tools = tools
+    },
+});
 builder.Services.AddSingleton(chatClient);
 
 var app = builder.Build();
@@ -76,17 +62,14 @@ AgentCard weatherAgentCard = new AgentCard
             Examples = ["What is the weather like in Vancouver today?"]
         }
     ]
-    
 };
 
-// Expose the agent via A2A protocol. You can also customize the agentCard
+// Expose the agent via A2A protocol.
 app.MapA2A(
-    agent, 
-    path: "/", 
+    agent,
+    path: "/",
     agentCard: weatherAgentCard,
     taskManager => app.MapWellKnownAgentCard(taskManager, "/")
     );
-
-
 
 app.Run();

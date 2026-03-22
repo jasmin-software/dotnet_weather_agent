@@ -1,9 +1,6 @@
 using System.ComponentModel;
 using System.Text.Json;
-
 namespace Tools;
-
-
 
 internal static class WeatherTool
 {
