@@ -35,7 +35,6 @@ internal static class WeatherTool
             }
 
             var json = await response.Content.ReadAsStringAsync();
-            var root = JsonDocument.Parse(json).RootElement.GetRawText();
             var openMeteoResponse = JsonSerializer.Deserialize<OpenMeteoResponse>(json);
             
             var parsed = new WeatherResponse
