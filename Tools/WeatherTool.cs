@@ -8,9 +8,9 @@ internal static class WeatherTool
     
     [Description("Lookup the weather in a location.")]
     public static async Task<WeatherResponse?> GetWeather(
-        [Description("The longitude of the location.")] double longitude = -123.1207,
-        [Description("The latitude of the location.")] double latitude = 49.2827,
-        [Description("The GMT offset for the location.")] int gmtOffset = -7,
+        [Description("The longitude of the location.")] double longitude,
+        [Description("The latitude of the location.")] double latitude,
+        [Description("The GMT offset for the location.")] int gmtOffset,
         [Description("The number of days to forecast.")] int forecastDays = 1)
     {
         var url =
@@ -25,14 +25,19 @@ internal static class WeatherTool
         Console.WriteLine($"Fetching weather data from Open-Meteo API:");
         Console.ResetColor();
         Console.WriteLine($"{url}");
+        Console.WriteLine("");
 
         try
         {
-            var json = @"{""latitude"":-49.25,""longitude"":-123.125,""generationtime_ms"":4.955172538757324,""utc_offset_seconds"":-25200,""timezone"":""GMT-0700"",""timezone_abbreviation"":""GMT-7"",""elevation"":0.0,""current_units"":{""time"":""iso8601"",""interval"":""seconds"",""temperature"":""°C"",""apparent_temperature"":""°C"",""windspeed"":""km/h"",""weathercode"":""wmo code""},""current"":{""time"":""2026-04-21T18:20"",""interval"":900,""temperature"":9.2,""apparent_temperature"":2.8,""windspeed"":38.9,""weathercode"":3},""hourly_units"":{""time"":""iso8601"",""temperature_2m"":""°C"",""precipitation"":""mm"",""weathercode"":""wmo code""},""hourly"":{""time"":[""2026-04-21T00:00"",""2026-04-21T01:00"",""2026-04-21T02:00"",""2026-04-21T03:00"",""2026-04-21T04:00"",""2026-04-21T05:00"",""2026-04-21T06:00"",""2026-04-21T07:00"",""2026-04-21T08:00"",""2026-04-21T09:00"",""2026-04-21T10:00"",""2026-04-21T11:00"",""2026-04-21T12:00"",""2026-04-21T13:00"",""2026-04-21T14:00"",""2026-04-21T15:00"",""2026-04-21T16:00"",""2026-04-21T17:00"",""2026-04-21T18:00"",""2026-04-21T19:00"",""2026-04-21T20:00"",""2026-04-21T21:00"",""2026-04-21T22:00"",""2026-04-21T23:00""],""temperature_2m"":[8.9,9.1,9.2,9.3,9.4,9.4,9.5,9.4,9.4,9.3,9.3,9.6,9.4,9.2,9.2,9.4,9.1,9.4,9.1,9.2,9.1,9.4,9.1,9.3],""precipitation"":[0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00],""weathercode"":[3,3,3,3,3,3,3,3,3,3,3,2,3,2,3,2,2,2,3,3,3,3,2,3]}}";JsonSerializerOptions options = new JsonSerializerOptions
+            var response = await _httpClient.GetAsync(url);
+
+            if (!response.IsSuccessStatusCode)
             {
-                WriteIndented = true
-            };
-            var openMeteoResponse = JsonSerializer.Deserialize<OpenMeteoResponse>(json, options);
+                throw new Exception($"Failed to fetch weather data. Status code: {response.StatusCode}");
+            }
+
+            var json = await response.Content.ReadAsStringAsync();
+            var openMeteoResponse = JsonSerializer.Deserialize<OpenMeteoResponse>(json);
             
             var parsed = new WeatherResponse
             {
@@ -41,35 +46,11 @@ internal static class WeatherTool
             };
             
             Console.ForegroundColor = ConsoleColor.Blue;
-            Console.WriteLine($"\nTransformed weather data:");
+            Console.WriteLine($"Transformed weather data:");
             Console.ResetColor();
-            Console.WriteLine("""
-            {
-                "current": {
-                    "time": "2026-04-21T18:20:00Z",
-                    "temperature": "25°C",
-                    "feels_like": "27°C",
-                    "wind_speed": "10 km/h",
-                    "condition": "Partly cloudy"
-                },
-                "today": {
-                    "hourly": [
-                        {
-                            "time": "2026-04-21T19:00:00Z",
-                            "temperature": "26°C",
-                            "precipitation": "0 mm",
-                            "condition": "Clear sky"
-                        },
-                        {
-                            "time": "2026-04-21T20:00:00Z",
-                            "temperature": "27°C",
-                            "precipitation": "0 mm",
-                            "condition": "Mainly clear"
-                        }
-                    ]
-                }
-            }
-            """);
+            Console.WriteLine($"{JsonSerializer.Serialize(parsed)}");
+            Console.WriteLine("");
+
             return parsed;
         }
         catch
