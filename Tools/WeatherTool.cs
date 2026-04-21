@@ -21,9 +21,9 @@ internal static class WeatherTool
             $"&forecast_days={forecastDays}" +
             $"&hourly=temperature_2m,precipitation,weathercode";
 
-        Console.ForegroundColor = ConsoleColor.Blue;
+        Console.ForegroundColor = ConsoleColor.Green;
         Console.WriteLine($"Fetching weather data from Open-Meteo API:");
-        Console.ResetColor();
+        Console.ForegroundColor = ConsoleColor.DarkGray;
         Console.WriteLine($"{url}");
         Console.WriteLine("");
 
@@ -45,9 +45,9 @@ internal static class WeatherTool
                 Today = MapToday(openMeteoResponse!)
             };
             
-            Console.ForegroundColor = ConsoleColor.Blue;
+            Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine($"Transformed weather data:");
-            Console.ResetColor();
+            Console.ForegroundColor = ConsoleColor.DarkGray;
             Console.WriteLine($"{JsonSerializer.Serialize(parsed)}");
             Console.WriteLine("");
 
