@@ -43,6 +43,24 @@ var agent = chatClient.AsAIAgent(options: new ChatClientAgentOptions
 builder.Services.AddSingleton(chatClient);
 
 var app = builder.Build();
+app.Use(async (context, next) =>
+{
+    var logger = context.RequestServices
+                        .GetRequiredService<ILoggerFactory>()
+                        .CreateLogger("A2A.WeatherAgent.RequestLogger");
+
+    logger.LogInformation(@"    Time: {Time}
+    Request Path: {Path}
+    Request Method: {Method}
+    Response Status Code: {StatusCode}
+    ",
+    DateTime.UtcNow,
+    context.Request.Path, 
+    context.Request.Method, 
+    context.Response.StatusCode);
+
+    await next();
+});
 
 app.MapOpenApi();
 app.UseSwagger();
